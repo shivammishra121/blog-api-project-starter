@@ -10,7 +10,7 @@ import java.util.List;
 @RequestMapping("/api/posts")
 public class BlogController {
 
-    private static final int MAX_CONTENT_LENGTH = 5000;
+    private static final int MAX_CONTENT_LENGTH = 1000;
 
     private static List<String> posts = new ArrayList<>();
 
