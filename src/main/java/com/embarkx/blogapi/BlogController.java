@@ -38,6 +38,7 @@ public class BlogController {
 
     @GetMapping("/{id}")
     public String getPost(@PathVariable int id) {
+        checkPostExists(id);
         return posts.get(id);
     }
 
@@ -51,8 +52,15 @@ public class BlogController {
 
     @DeleteMapping("/{id}")
     public String deletePost(@PathVariable int id) {
+        checkPostExists(id);
         posts.remove(id);
         return "Deleted";
+    }
+
+    private void checkPostExists(int id) {
+        if (id < 0 || id >= posts.size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id " + id);
+        }
     }
 
 @GetMapping("/total")

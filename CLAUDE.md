@@ -35,7 +35,7 @@ There is no linter or formatter configured. The only test, `BlogApiApplicationTe
 
 The Postman collection names these requests with a `(Bug: ...)` suffix:
 - **No validation:** fixed. `POST /api/posts` now returns 400 for a blank title or content, or for content longer than `MAX_CONTENT_LENGTH` (5000).
-- **Crashes:** `GET`/`DELETE /{id}` with a missing ID throw `IndexOutOfBoundsException` → HTTP 500 instead of 404.
+- **Crashes:** fixed. `GET`/`DELETE /{id}` return 404 for an out-of-range ID via `checkPostExists`. IDs are still list indexes, so deleting a post shifts later IDs.
 - **Hardcoded 5000:** partly addressed. The limit is now the `MAX_CONTENT_LENGTH` constant, shared by create and `/validate`. `/validate` still always returns 200, with body `"OK"` or `"Too long"`.
 - **String concat:** `/total` concatenates strings (`"Total words: 100200300"`) instead of summing to 600.
 
