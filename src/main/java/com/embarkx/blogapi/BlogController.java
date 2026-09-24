@@ -1,6 +1,8 @@
 package com.embarkx.blogapi;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,10 +10,22 @@ import java.util.List;
 @RequestMapping("/api/posts")
 public class BlogController {
 
+    private static final int MAX_CONTENT_LENGTH = 5000;
+
     private static List<String> posts = new ArrayList<>();
 
     @PostMapping
     public String createPost(@RequestParam String title, @RequestParam String content) {
+        if (title.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title must not be empty");
+        }
+        if (content.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
+        }
+        if (content.length() > MAX_CONTENT_LENGTH) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Content must be at most " + MAX_CONTENT_LENGTH + " characters");
+        }
         String post = title + ":" + content;
         posts.add(post);
         return "Post created";
@@ -29,7 +43,7 @@ public class BlogController {
 
     @PostMapping("/validate")
     public String validateContent(@RequestParam String content) {
-        if (content.length() > 5000) {
+        if (content.length() > MAX_CONTENT_LENGTH) {
             return "Too long";
         }
         return "OK";
