@@ -8,9 +8,14 @@
       "name": "Create Post",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": {
-          "raw": "http://localhost:8080/api/posts?title=My First Post&content=This is the content of my first post",
+          "raw": "http://localhost:8080/api/posts",
           "host": [
             "localhost"
           ],
@@ -19,27 +24,31 @@
             "api",
             "posts"
           ],
-          "query": [
-            {
-              "key": "title",
-              "value": "My First Post"
-            },
-            {
-              "key": "content",
-              "value": "This is the content of my first post"
-            }
-          ],
           "protocol": "http"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"My First Post\",\n  \"content\": \"This is the content of my first post\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         }
       }
     },
     {
-      "name": "Create Post - Empty Title (Bug: no validation)",
+      "name": "Create Post - Empty Title (400)",
       "request": {
         "method": "POST",
-        "header": [],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "url": {
-          "raw": "http://localhost:8080/api/posts?title=&content=Content with no title",
+          "raw": "http://localhost:8080/api/posts",
           "host": [
             "localhost"
           ],
@@ -48,17 +57,49 @@
             "api",
             "posts"
           ],
-          "query": [
-            {
-              "key": "title",
-              "value": ""
-            },
-            {
-              "key": "content",
-              "value": "Content with no title"
+          "protocol": "http"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"\",\n  \"content\": \"Content with no title\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
             }
+          }
+        }
+      }
+    },
+    {
+      "name": "Create Post - Title Too Long (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/posts",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "posts"
           ],
           "protocol": "http"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt\",\n  \"content\": \"Content with a very long title\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         }
       }
     },

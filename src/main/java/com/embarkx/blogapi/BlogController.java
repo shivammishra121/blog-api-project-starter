@@ -1,50 +1,50 @@
 package com.embarkx.blogapi;
 
+import com.embarkx.blogapi.dto.CreatePostRequest;
+import com.embarkx.blogapi.dto.PostResponse;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api/posts")
 public class BlogController {
 
-    private static final int MAX_CONTENT_LENGTH = 1000;
+    // Keyed by a stable id so deleting one post doesn't change the ids of others
+    private static final Map<Integer, PostResponse> posts = new ConcurrentSkipListMap<>();
+    private static final AtomicInteger nextId = new AtomicInteger(0);
 
-    private static List<String> posts = new ArrayList<>();
+    @Value("${blog.post.max-content-length}")
+    private int maxContentLength;
 
     @PostMapping
-    public String createPost(@RequestParam String title, @RequestParam String content) {
-        if (title.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Title must not be empty");
-        }
-        if (content.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content must not be empty");
-        }
-        if (content.length() > MAX_CONTENT_LENGTH) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Content must be at most " + MAX_CONTENT_LENGTH + " characters");
-        }
-        String post = title + ":" + content;
-        posts.add(post);
-        return "Post created";
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostResponse createPost(@Valid @RequestBody CreatePostRequest request) {
+        PostResponse post = new PostResponse(nextId.getAndIncrement(), request.title(), request.content());
+        posts.put(post.id(), post);
+        return post;
     }
 
     @GetMapping
-    public List<String> getAllPosts() {
-        return posts;
+    public List<PostResponse> getAllPosts() {
+        return new ArrayList<>(posts.values());
     }
 
     @GetMapping("/{id}")
-    public String getPost(@PathVariable int id) {
-        checkPostExists(id);
-        return posts.get(id);
+    public PostResponse getPost(@PathVariable int id) {
+        return findPost(id);
     }
 
     @PostMapping("/validate")
     public String validateContent(@RequestParam String content) {
-        if (content.length() > MAX_CONTENT_LENGTH) {
+        if (content.length() > maxContentLength) {
             return "Too long";
         }
         return "OK";
@@ -52,23 +52,25 @@ public class BlogController {
 
     @DeleteMapping("/{id}")
     public String deletePost(@PathVariable int id) {
-        checkPostExists(id);
+        findPost(id);
         posts.remove(id);
         return "Deleted";
     }
 
-    private void checkPostExists(int id) {
-        if (id < 0 || id >= posts.size()) {
+    private PostResponse findPost(int id) {
+        PostResponse post = posts.get(id);
+        if (post == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id " + id);
         }
+        return post;
     }
 
     @GetMapping("/total")
     public String getTotalWordCount() {
-        List<String> wordCounts = List.of("100", "200", "300");
+        List<Integer> wordCounts = List.of(100, 200, 300);
         int total = 0;
-        for (String count : wordCounts) {
-            total += Integer.parseInt(count);
+        for (int count : wordCounts) {
+            total += count;
         }
         return "Total words: " + total;
     }
