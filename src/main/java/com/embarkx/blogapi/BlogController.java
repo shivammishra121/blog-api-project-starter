@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BlogController {
 
     // Keyed by a stable id so deleting one post doesn't change the ids of others
-    private static final Map<Integer, PostResponse> posts = new ConcurrentSkipListMap<>();
-    private static final AtomicInteger nextId = new AtomicInteger(0);
+    private final Map<Integer, PostResponse> posts = new ConcurrentSkipListMap<>();
+    private final AtomicInteger nextId = new AtomicInteger(0);
 
     @Value("${blog.post.max-content-length}")
     private int maxContentLength;

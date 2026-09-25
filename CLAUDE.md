@@ -29,7 +29,7 @@ There is no linter or formatter configured. The only test, `BlogApiApplicationTe
   - `CreatePostRequest`: the JSON body for creating a post. It holds the Bean Validation rules: `@NotBlank` on both fields, `@Size(max = MAX_TITLE_LENGTH)` (100, a constant) on the title, and the custom `@MaxContentLength` on the content.
   - `PostResponse`: `{id, title, content}`, returned by the create/get endpoints and also used as the stored object.
 - `com.embarkx.blogapi.validation`: `@MaxContentLength` and its `MaxContentLengthValidator` read the content limit from the `blog.post.max-content-length` property (1000) via `@Value`. `@Size` can't be used there, because annotation values must be compile-time constants. `BlogController` injects the same property for `/validate`.
-- Posts live in a static `ConcurrentSkipListMap<Integer, PostResponse>`, keyed by a stable ID from an `AtomicInteger`. Deleting a post doesn't change other IDs. Data is in-memory only and lost on restart.
+- Posts live in a `ConcurrentSkipListMap<Integer, PostResponse>` instance field on the controller (a singleton bean, so there is one shared store), keyed by a stable ID from an `AtomicInteger`. Deleting a post doesn't change other IDs. Data is in-memory only and lost on restart.
 - Endpoints:
   - `POST /api/posts`: JSON body `{"title","content"}`, validated with `@Valid`. Returns 201 with the created post, or 400 with field errors.
   - `GET /api/posts`: list of posts.
